@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kasir Sederhana</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .btn-tambah {
+            background: #16a34a;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-hapus {
+            background: #dc2626;
+            color: white;
+            padding: 8px 12px;
+        }
+
+        .btn-bayar {
+            background: #2563eb;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+        }
+
+        .total {
+            text-align: right;
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .kembalian {
+            margin-top: 15px;
+            padding: 15px;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px auto;
+                padding: 10px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>APLIKASI KASIR</h1>
+    <p>Kasir Sederhana Berbahasa Indonesia</p>
+</header>
+
+<div class="container">
+
+    <!-- Form Tambah Barang -->
+    <div class="card">
+        <h2>Tambah Barang</h2>
+
+        <div class="form-group">
+            <label>Nama Barang</label>
+            <input type="text" id="namaBarang" placeholder="Contoh: Indomie">
+        </div>
+
+        <div class="form-group">
+            <label>Harga Barang</label>
+            <input type="number" id="hargaBarang" placeholder="Contoh: 5000">
+        </div>
+
+        <div class="form-group">
+            <label>Jumlah</label>
+            <input type="number" id="jumlahBarang" placeholder="Contoh: 2" min="1">
+        </div>
+
+        <button class="btn-tambah" onclick="tambahBarang()">
+            + Tambah Barang
+        </button>
+    </div>
+
+    <!-- Daftar Belanja -->
+    <div class="card">
+        <h2>Daftar Belanja</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Barang</th>
+                    <th>Harga</th>
+                    <th>Jumlah</th>
+                    <th>Total</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody id="daftarBelanja">
+            </tbody>
+        </table>
+
+        <div class="total">
+            Total: Rp <span id="totalHarga">0</span>
+        </div>
+    </div>
+
+    <!-- Pembayaran -->
+    <div class="card">
+        <h2>Pembayaran</h2>
+
+        <div class="form-group">
+            <label>Uang Dibayar</label>
+            <input type="number" id="uangBayar" placeholder="Masukkan uang pembayaran">
+        </div>
+
+        <button class="btn-bayar" onclick="hitungKembalian()">
+            Hitung Pembayaran
+        </button>
+
+        <div id="hasilKembalian"></div>
+    </div>
+
+</div>
+
+<script>
+    let daftarBarang = [];
+    let totalHarga = 0;
+
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID').format(angka);
+    }
+
+    function tambahBarang() {
+        const nama = document.getElementById("namaBarang").value;
+        const harga = Number(document.getElementById("hargaBarang").value);
+        const jumlah = Number(document.getElementById("jumlahBarang").value);
+
+        if (nama === "" || harga <= 0 || jumlah <= 0) {
+            alert("Silakan isi semua data barang dengan benar!");
+            return;
+        }
+
+        const total = harga * jumlah;
+
+        const barang = {
+            nama: nama,
+            harga: harga,
+            jumlah: jumlah,
+            total: total
+        };
+
+        daftarBarang.push(barang);
+
+        tampilkanBarang();
+
+        document.getElementById("namaBarang").value = "";
+        document.getElementById("hargaBarang").value = "";
+        document.getElementById("jumlahBarang").value = "";
+    }
+
+    function tampilkanBarang() {
+        const tabel = document.getElementById("daftarBelanja");
+
+        tabel.innerHTML = "";
+        totalHarga = 0;
+
+        daftarBarang.forEach((barang, index) => {
+
+            totalHarga += barang.total;
+
+            tabel.innerHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${barang.nama}</td>
+                    <td>Rp ${formatRupiah(barang.harga)}</td>
+                    <td>${barang.jumlah}</td>
+                    <td>Rp ${formatRupiah(barang.total)}</td>
+                    <td>
+                        <button class="btn-hapus" onclick="hapusBarang(${index})">
+                            Hapus
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        document.getElementById("totalHarga").innerText =
+            formatRupiah(totalHarga);
+    }
+
+    function hapusBarang(index) {
+        daftarBarang.splice(index, 1);
+        tampilkanBarang();
+    }
+
+    function hitungKembalian() {
+        const uangBayar =
+            Number(document.getElementById("uangBayar").value);
+
+        if (daftarBarang.length === 0) {
+            alert("Belum ada barang yang ditambahkan!");
+            return;
+        }
+
+        if (uangBayar <= 0) {
+            alert("Masukkan jumlah uang pembayaran!");
+            return;
+        }
+
+        if (uangBayar < totalHarga) {
+            const kurang = totalHarga - uangBayar;
+
+            document.getElementById("hasilKembalian").innerHTML = `
+                <div class="kembalian">
+                    Uang Anda kurang Rp ${formatRupiah(kurang)}
+                </div>
+            `;
+
+            return;
+        }
+
+        const kembalian = uangBayar - totalHarga;
+
+        document.getElementById("hasilKembalian").innerHTML = `
+            <div class="kembalian">
+                Pembayaran Berhasil!<br>
+                Total Belanja: Rp ${formatRupiah(totalHarga)}<br>
+                Uang Dibayar: Rp ${formatRupiah(uangBayar)}<br>
+                Kembalian: Rp ${formatRupiah(kembalian)}
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
