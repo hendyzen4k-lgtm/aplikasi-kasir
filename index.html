@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Kelas</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f2f4f7;
+            color: #333;
+        }
+
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .hapus-semua {
+            background: #dc2626;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+
+        .hapus {
+            background: #dc2626;
+            padding: 7px;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .kosong {
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>📋 Absensi Kelas</h1>
+    <p>Sistem Absensi Siswa Sederhana</p>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Input Absensi</h2>
+
+        <label>Nama Siswa</label>
+        <input type="text" id="nama" placeholder="Masukkan nama siswa">
+
+        <label>Status Kehadiran</label>
+        <select id="status">
+            <option value="Hadir">Hadir</option>
+            <option value="Izin">Izin</option>
+            <option value="Sakit">Sakit</option>
+            <option value="Alpa">Alpa</option>
+        </select>
+
+        <label>Tanggal</label>
+        <input type="date" id="tanggal">
+
+        <button onclick="simpanAbsensi()">Simpan Absensi</button>
+    </div>
+
+
+    <div class="card">
+        <h2>📊 Rekap Absensi</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody id="tabelAbsensi">
+            </tbody>
+        </table>
+
+        <br>
+
+        <button class="hapus-semua" onclick="hapusSemua()">
+            Hapus Semua Data
+        </button>
+    </div>
+
+</div>
+
+
+<script>
+
+    // Mengambil data dari Local Storage
+    let dataAbsensi = JSON.parse(localStorage.getItem("absensi")) || [];
+
+
+    // Mengatur tanggal hari ini
+    document.getElementById("tanggal").value =
+        new Date().toISOString().split("T")[0];
+
+
+    // Fungsi menyimpan absensi
+    function simpanAbsensi() {
+
+        let nama = document.getElementById("nama").value;
+        let status = document.getElementById("status").value;
+        let tanggal = document.getElementById("tanggal").value;
+
+        if (nama === "" || tanggal === "") {
+            alert("Silakan isi nama dan tanggal!");
+            return;
+        }
+
+        let data = {
+            nama: nama,
+            status: status,
+            tanggal: tanggal
+        };
+
+        dataAbsensi.push(data);
+
+        localStorage.setItem(
+            "absensi",
+            JSON.stringify(dataAbsensi)
+        );
+
+        alert("Absensi berhasil disimpan!");
+
+        document.getElementById("nama").value = "";
+
+        tampilkanData();
+    }
+
+
+    // Menampilkan data absensi
+    function tampilkanData() {
+
+        let tabel = document.getElementById("tabelAbsensi");
+
+        tabel.innerHTML = "";
+
+        if (dataAbsensi.length === 0) {
+
+            tabel.innerHTML = `
+                <tr>
+                    <td colspan="5" class="kosong">
+                        Belum ada data absensi
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        dataAbsensi.forEach((data, index) => {
+
+            tabel.innerHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${data.nama}</td>
+                    <td>${data.status}</td>
+                    <td>${data.tanggal}</td>
+                    <td>
+                        <button 
+                            class="hapus"
+                            onclick="hapusData(${index})">
+                            Hapus
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+        });
+    }
+
+
+    // Menghapus satu data
+    function hapusData(index) {
+
+        if (confirm("Yakin ingin menghapus data ini?")) {
+
+            dataAbsensi.splice(index, 1);
+
+            localStorage.setItem(
+                "absensi",
+                JSON.stringify(dataAbsensi)
+            );
+
+            tampilkanData();
+        }
+    }
+
+
+    // Menghapus semua data
+    function hapusSemua() {
+
+        if (dataAbsensi.length === 0) {
+            alert("Belum ada data yang bisa dihapus!");
+            return;
+        }
+
+        if (confirm("Yakin ingin menghapus semua data?")) {
+
+            dataAbsensi = [];
+
+            localStorage.removeItem("absensi");
+
+            tampilkanData();
+        }
+    }
+
+
+    // Menampilkan data saat halaman dibuka
+    tampilkanData();
+
+</script>
+
+</body>
+</html>
